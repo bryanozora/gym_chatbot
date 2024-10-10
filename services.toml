@@ -1,0 +1,10 @@
+# Config version, DO NOT CHANGE
+version = 1
+
+# List of HTTP services you wish to be exposed to the internet
+[services]
+[services.my-service]
+# Service name. This will be used as the subdomain for the service.
+name = 'sl'
+# Local port to forward to. Bind your application to 127.0.0.2:local_port
+local-port = 4070
