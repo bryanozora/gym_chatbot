@@ -6,10 +6,9 @@ from llama_index.core.llms import ChatMessage
 from llama_index.core.storage.chat_store import SimpleChatStore
 from llama_index.core.memory import ChatMemoryBuffer
 from llama_index.core.chat_engine import CondensePlusContextChatEngine
-from difflib import SequenceMatcher
 import fitz  # PyMuPDF for handling PDF content (pages, images)
 import uuid  # For generating unique session IDs
-
+import re
 
 # Define the Chatbot class
 class Chatbot:
@@ -28,7 +27,7 @@ class Chatbot:
         # Load the PDF document
         self.pdf_doc = self.load_pdf(pdf_path)
 
-    def set_setting(_arg, llm, embedding_model):
+    def set_setting(self, llm, embedding_model):
         Settings.llm = Ollama(model=llm, base_url="http://127.0.0.1:11434")
         Settings.embed_model = FastEmbedEmbedding(
             model_name=embedding_model, cache_dir="./fastembed_cache")
@@ -41,7 +40,7 @@ class Chatbot:
         return Settings
 
     @st.cache_resource(show_spinner=False)
-    def load_data(_arg, vector_store=None):
+    def load_data(_self, vector_store=None):
         with st.spinner(text="Loading and indexing – hang tight! This should take a few minutes."):
             # Read & load document from folder
             reader = SimpleDirectoryReader(input_dir="./docs", recursive=True)
@@ -67,7 +66,7 @@ class Chatbot:
             llm=Settings.llm
         )
 
-        # PDF handling methods
+    # PDF handling methods
     def load_pdf(self, pdf_path):
         if pdf_path:
             return fitz.open(pdf_path)  # Load the PDF document
@@ -75,9 +74,7 @@ class Chatbot:
 
     def find_relevant_pages(self, query):
         relevant_pages = []
-        # Convert query to lowercase
         query_lower = query.lower()
-        # List of known exercise names in the PDF (you could extract these from the document)
         known_exercises = [
             "180 jump squat", "bulgarian split squat", "alternating dumbbell swing", "bear squat",
             "Alternating Side Lunge", "Alternating Side Lunge Touch", "Ankle Circles", "Ankle Hops",
@@ -116,22 +113,20 @@ class Chatbot:
             "Back Extensions", "Back Stretch", "Bow and Arrow Squat Pull", "Cobra Lat Pulldown", 
             "Lawnmower Band Pull", "LawnMower Pull", "Lower Back Stretch", "Mid Back Band Pull", "Neck Rolls", 
             "Pilates Swimming", "Prone Back Extension", "Rolling Like A Ball", "Superman", "Upper Back Stretch", 
-            "Waist Slimmer Squat", "Wide Row", "Wood Chop"]  # Add more as needed
-        # Dynamically find which exercise the user is asking about by matching known exercise names
+            "Waist Slimmer Squat", "Wide Row", "Wood Chop"
+        ]
         matching_exercise = None
         for exercise in known_exercises:
-            if exercise in query_lower:
-                matching_exercise = exercise
+            if exercise.lower() in query_lower:
+                matching_exercise = exercise.lower()
                 break
         if matching_exercise and self.pdf_doc:
             for page_num in range(len(self.pdf_doc)):
                 page = self.pdf_doc.load_page(page_num)
                 text = page.get_text("text").lower()
-                # Match the exercise directly within the page text
                 if matching_exercise in text:
                     relevant_pages.append(page_num)
         return relevant_pages
-
 
     def display_page_as_image(self, page_num):
         page = self.pdf_doc.load_page(page_num)
@@ -139,16 +134,11 @@ class Chatbot:
         img_bytes = pix.tobytes("png")  # Convert page to image bytes
         st.image(img_bytes, caption=f"Page {page_num + 1}", use_column_width=True)
 
-    # Respond with text and relevant PDF page images
     def respond_with_pdf_pages(self, query):
-        # Search relevant pages
         relevant_pages = self.find_relevant_pages(query)
-
         if relevant_pages:
             for page_num in relevant_pages:
                 self.display_page_as_image(page_num)
-        else:
-            st.write("No relevant pages found in the document.")
 
 
 # Initialize chat session if not available
@@ -170,9 +160,6 @@ with st.sidebar:
     st.header("Chat Sessions")
 
     # Check if there are no chat sessions and automatically create one
-    if "chat_sessions" not in st.session_state:
-        st.session_state.chat_sessions = {}
-
     if not st.session_state.chat_sessions:
         create_new_session()  # Automatically create a new session if none exist
 
@@ -188,7 +175,6 @@ with st.sidebar:
     # Option to create a new session
     if st.button("Start New Session"):
         create_new_session()
-
 
 # Main Program
 st.title("Gym Exercise Chatbot")
@@ -213,21 +199,19 @@ if st.session_state.selected_session:
         with st.chat_message("user"):
             st.markdown(prompt)
 
-        # Add user message to the session history
-        session_messages.append({"role": "user", "content": prompt})
-
-        # Update session name to be the last question asked by the user
-        session_data["name"] = prompt[:50]  # Limit session name length to 50 characters
-
         # Get assistant's response and display it
         with st.chat_message("assistant"):
             response = chatbot.chat_engine.chat(prompt)
             st.markdown(response.response)
 
-        # Add assistant's message to the session history
-        session_messages.append({"role": "assistant", "content": response.response})
-
         # Display relevant PDF pages as images based on the prompt
         chatbot.respond_with_pdf_pages(prompt)
+
+        # After the bot's response, save both user prompt and bot's response
+        session_messages.append({"role": "user", "content": prompt})
+        session_messages.append({"role": "assistant", "content": response.response})
+
+        # Update session name to be the last question asked by the user
+        session_data["name"] = prompt[:50]  # Limit session name length to 50 characters
 else:
     st.write("Please select or start a new chat session.")
