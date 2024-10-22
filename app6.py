@@ -1,7 +1,7 @@
 import streamlit as st
 from llama_index.llms.ollama import Ollama
 from llama_index.core import SimpleDirectoryReader, VectorStoreIndex, Settings
-from llama_index.embeddings.fastembed import FastEmbedEmbedding
+from llama_index.embeddings.ollama import OllamaEmbedding
 from llama_index.core.llms import ChatMessage
 from llama_index.core.storage.chat_store import SimpleChatStore
 from llama_index.core.memory import ChatMemoryBuffer
@@ -12,7 +12,8 @@ import re
 
 # Define the Chatbot class
 class Chatbot:
-    def __init__(self, llm="llama3.1:latest", embedding_model="intfloat/multilingual-e5-large", vector_store=None, pdf_path=None):
+    def __init__(self, llm="llama3.1:latest", embedding_model="bge-m3:latest", vector_store=None, pdf_path=None):
+        # Use Ollama embedding model
         self.Settings = self.set_setting(llm, embedding_model)
 
         # Indexing
@@ -29,8 +30,7 @@ class Chatbot:
 
     def set_setting(self, llm, embedding_model):
         Settings.llm = Ollama(model=llm, base_url="http://127.0.0.1:11434")
-        Settings.embed_model = FastEmbedEmbedding(
-            model_name=embedding_model, cache_dir="./fastembed_cache")
+        Settings.embed_model = OllamaEmbedding(base_url="http://127.0.0.1:11434", model_name=embedding_model)
         Settings.system_prompt = """
                                 You are a multi-lingual expert system who has knowledge, based on 
                                 real-time data. You will always try to be helpful and try to help them 
