@@ -4,6 +4,9 @@ llama-index-vector-stores-qdrant
 llama-index-embeddings-ollama
 llama-index-retrievers-bm25
 
+swarm @ git+https://github.com/openai/swarm.git
+
+sentence-transformers
 qdrant_client
 fastembed
 streamlit==1.32.2
