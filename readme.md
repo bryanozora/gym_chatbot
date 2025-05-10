@@ -21,7 +21,7 @@ An AI-powered chatbot designed to provide personalized gym exercise recommendati
 ## 🛠️ Technologies Used
 
 - **Language**: Python  
-- **Framework**: Streamlit  
+- **Framework**: Streamlit, OpenAI Swarm
 - **Libraries**:
   - `nltk`
   - `fastembed`
