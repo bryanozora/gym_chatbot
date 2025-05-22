@@ -15,6 +15,7 @@ An AI-powered chatbot designed to provide personalized gym exercise recommendati
 - **Natural Language Understanding**: Communicates naturally with users for intuitive interaction.
 - **Retrieval-Augmented Generation (RAG)**: Combines search and generative models to provide relevant answers.
 - **Session Memory**: Maintains chat history for continuity in conversations.
+- **Image Embedding**: Uses Fitz/PyMuPDF for embedding image into conversations
 
 ---
 
