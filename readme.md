@@ -22,11 +22,21 @@ An AI-powered chatbot designed to provide personalized gym exercise recommendati
 ## 🛠️ Technologies Used
 
 - **Language**: Python  
-- **Framework**: Streamlit, OpenAI Swarm
+- **Framework**: Streamlit, OpenAI Swarm  
 - **Libraries**:
-  - `nltk`
-  - `fastembed`
-  - `qdrant-client`
-- **Other Tools**: Vector embedding, RAG pipeline
+  - `nltk` – for text preprocessing and tokenization  
+  - `fastembed` – for efficient embedding generation  
+  - `qdrant-client` – to interface with the Qdrant vector database  
+  - `fitz` / `PyMuPDF` – for parsing and extracting text from PDFs  
+  - `pandas` – for data manipulation and job dataset handling  
+  - `scikit-learn` – for job category classification  
+  - `spacy` – for skill extraction from resumes  
+  - `llama-index` – for building and querying vector-based document indices  
+  - `openai` – for language modeling and RAG-style completions  
+- **Other Tools**:  
+  - Vector Embedding (FastEmbed + Qdrant via LlamaIndex)  
+  - Retrieval-Augmented Generation (RAG) pipeline using LlamaIndex + OpenAI  
+  - Resume parsing and semantic matching  
+  - CSV-based job and application storage
 
 ---
